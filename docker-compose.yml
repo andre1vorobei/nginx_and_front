@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: my-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+      - ./certs/fullchain.crt:/etc/nginx/certs/fullchain.crt
+      - ./certs/abc.com.key:/etc/nginx/certs/abc.com.key
+    networks:
+      my-app-network:
+        ipv4_address: 172.20.0.100
+    restart: unless-stopped
+
+  frontend:
+    image: fekk/frontend
+    container_name: frontend_service
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    networks:
+      my-app-network:
+        ipv4_address: 172.20.0.101
+    extra_hosts:
+      - "158.160.71.16:172.20.0.100"
+networks:
+  my-app-network:
+    external: true
+    name: my-app-network
